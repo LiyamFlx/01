@@ -3,247 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EngageSense - Audio Engagement Analysis</title>
+  <title>EngageSense</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPDF/2.4.0/jspdf.umd.min.js"></script>
   <style>
     /* General Styles */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #1a1a2e;
-      color: #f5f5f5;
-    }
-
-    header {
-      background-color: #16213e;
-      padding: 20px;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-      color: #e94560;
-    }
-
-    nav {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin: 15px 0;
-    }
-
-    nav a {
-      color: #f5f5f5;
-      text-decoration: none;
-      padding: 10px 15px;
-      background: #0f3460;
-      border-radius: 5px;
-      transition: background-color 0.3s ease;
-    }
-
-    nav a:hover {
-      background-color: #e94560;
-    }
-
-    main {
-      padding: 20px;
-      text-align: center;
-    }
-
-    footer {
-      background-color: #0f3460;
-      padding: 10px;
-      text-align: center;
+      background-color: #1e1e2f;
       color: #fff;
     }
-
-    section {
-      margin: 20px auto;
-      max-width: 900px;
-      background-color: #1a1a2e;
+    .container {
+      max-width: 1200px;
+      margin: auto;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
-
-    canvas {
-      border: 2px solid #e94560;
-      margin: 20px auto;
-      display: block;
-    }
-
-    .chart-container {
-      margin: 20px auto;
-    }
-
     .btn {
       padding: 10px 20px;
-      font-size: 1rem;
-      background-color: #0f3460;
-      color: #fff;
+      margin: 5px;
+      background: linear-gradient(90deg, #4caf50, #009688);
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin: 5px;
-      transition: background-color 0.3s;
+      color: white;
+      font-size: 16px;
+      transition: transform 0.2s;
     }
-
     .btn:hover {
-      background-color: #e94560;
+      transform: scale(1.05);
     }
-
-    .dashboard-stats {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 15px;
+    .card {
+      background-color: #29293d;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
     }
-
-    .dashboard-card {
-      background-color: #16213e;
-      color: #f5f5f5;
-      padding: 15px;
-      border-radius: 5px;
-      width: 45%;
+    h1, h2, h3 {
       text-align: center;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+      margin-bottom: 20px;
     }
-
-    @media (max-width: 600px) {
-      .dashboard-card {
-        width: 100%;
+    canvas {
+      background-color: #2e2e3f;
+      border-radius: 8px;
+    }
+    .hidden {
+      display: none;
+    }
+    /* Responsive Design */
+    @media only screen and (max-width: 768px) {
+      canvas {
+        width: 100% !important;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
-    <h1>EngageSense</h1>
-    <p>Real-Time Audio Engagement Analysis</p>
-  </header>
-
-  <!-- Navigation -->
-  <nav>
-    <a href="#welcome">Welcome</a>
-    <a href="#upload-record">Upload/Record</a>
-    <a href="#results">Results</a>
-    <a href="#dashboard">Dashboard</a>
-  </nav>
-
-  <!-- Welcome Section -->
-  <section id="welcome">
-    <h2>Welcome to EngageSense</h2>
-    <p>Personalized audio engagement insights at your fingertips.</p>
-    <button class="btn" onclick="startAnalysisFlow()">Get Started</button>
-  </section>
-
-  <!-- Upload/Record Section -->
-  <section id="upload-record">
-    <h2>Upload or Record Audio</h2>
-    <div>
-      <h3>Upload Audio File</h3>
-      <input type="file" id="audio-upload" accept=".mp3,.wav" class="btn">
-      <button class="btn" onclick="handleUpload()">Analyze Upload</button>
+  <div class="container">
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="card">
+      <h1>Welcome to EngageSense</h1>
+      <p>Analyze real-time engagement across Physical, Emotional, Mental, and Spiritual dimensions.</p>
+      <button class="btn" onclick="showScreen('upload-record-screen')">Start</button>
     </div>
-    <div>
-      <h3>Record Live Audio</h3>
-      <button class="btn" onclick="startRecording()">Start Recording</button>
-      <button class="btn" onclick="stopRecording()">Stop Recording</button>
-    </div>
-  </section>
 
-  <!-- Results Section -->
-  <section id="results">
-    <h2>Analysis Results</h2>
-    <div class="chart-container">
-      <canvas id="engagement-chart"></canvas>
-    </div>
-    <div>
-      <button class="btn" onclick="downloadResults()">Download Results</button>
-      <button class="btn" onclick="resetFlow()">Start Over</button>
-    </div>
-  </section>
-
-  <!-- Dashboard Section -->
-  <section id="dashboard">
-    <h2>Dashboard</h2>
-    <div class="dashboard-stats">
-      <div class="dashboard-card">
-        <h3>Total Analyses</h3>
-        <p id="total-analyses">0</p>
+    <!-- Upload/Record Screen -->
+    <div id="upload-record-screen" class="card hidden">
+      <h2>Upload or Record Audio</h2>
+      <div>
+        <label for="file-input" class="btn">Upload Files</label>
+        <input id="file-input" type="file" multiple accept=".mp3, .mp4" style="display:none" onchange="handleFileUpload(event)">
+        <progress id="upload-progress" max="100" value="0" class="hidden"></progress>
       </div>
-      <div class="dashboard-card">
-        <h3>Most Recent Engagement</h3>
-        <p id="recent-engagement">N/A</p>
+      <div>
+        <button class="btn" onclick="startRecording()">Start Recording</button>
+        <button class="btn hidden" id="stop-recording" onclick="stopRecording()">Stop</button>
+        <p id="record-timer">Recording Time: 0:00</p>
       </div>
+      <button class="btn" onclick="showScreen('real-time-data')">Next</button>
     </div>
-  </section>
 
-  <!-- Footer -->
-  <footer>
-    <p>&copy; 2024 EngageSense. All Rights Reserved.</p>
-  </footer>
+    <!-- Real-Time Data Screen -->
+    <div id="real-time-data" class="card hidden">
+      <h2>Real-Time Engagement Data</h2>
+      <canvas id="realTimeChart"></canvas>
+      <button class="btn" onclick="showScreen('dashboard-results')">Next</button>
+    </div>
 
-  <!-- JavaScript -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Engagement Dashboard Results -->
+    <div id="dashboard-results" class="card hidden">
+      <h2>Engagement Dashboard Results</h2>
+      <canvas id="resultsChart"></canvas>
+      <button class="btn" onclick="generatePDF()">Download Results</button>
+      <button class="btn" onclick="showScreen('detailed-results')">View Detailed Results</button>
+    </div>
+
+    <!-- Detailed Engagement Results -->
+    <div id="detailed-results" class="card hidden">
+      <h2>Detailed Engagement Results</h2>
+      <canvas id="detailedResultsChart"></canvas>
+      <button class="btn" onclick="showScreen('dashboard-results')">Back</button>
+    </div>
+  </div>
+
   <script>
-    let totalAnalyses = 0;
-
-    function startAnalysisFlow() {
-      alert("Starting analysis flow...");
+    /* Navigation Logic */
+    function showScreen(screenId) {
+      document.querySelectorAll('.card').forEach(screen => screen.classList.add('hidden'));
+      document.getElementById(screenId).classList.remove('hidden');
     }
 
-    function handleUpload() {
-      const uploadInput = document.getElementById('audio-upload');
-      if (!uploadInput.files.length) {
-        alert("No file selected.");
-        return;
-      }
-      alert("Audio uploaded successfully! Analysis starting...");
-      updateResults();
+    /* Upload/Record Logic */
+    function handleFileUpload(event) {
+      const progressBar = document.getElementById('upload-progress');
+      progressBar.classList.remove('hidden');
+      progressBar.value = 0;
+      setTimeout(() => progressBar.value = 100, 2000); // Simulate upload
     }
 
+    let recordingTimer;
     function startRecording() {
-      alert("Recording started...");
+      document.getElementById('stop-recording').classList.remove('hidden');
+      recordingTimer = setInterval(() => {
+        const timer = document.getElementById('record-timer');
+        let [minutes, seconds] = timer.textContent.split(': ')[1].split(':').map(Number);
+        seconds += 1;
+        if (seconds === 60) {
+          seconds = 0;
+          minutes += 1;
+        }
+        timer.textContent = `Recording Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      }, 1000);
     }
 
     function stopRecording() {
-      alert("Recording stopped. Analysis starting...");
-      updateResults();
+      clearInterval(recordingTimer);
+      document.getElementById('stop-recording').classList.add('hidden');
     }
 
-    function updateResults() {
-      totalAnalyses++;
-      document.getElementById("total-analyses").innerText = totalAnalyses;
+    /* Chart.js Example Data */
+    const engagementData = {
+      labels: ['Physical', 'Emotional', 'Mental', 'Spiritual'],
+      datasets: [{
+        label: 'Engagement Levels',
+        data: [50, 60, 70, 80],
+        backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+        borderColor: ['rgba(75, 192, 192, 1)'],
+        borderWidth: 1
+      }]
+    };
 
-      const ctx = document.getElementById("engagement-chart").getContext("2d");
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ["Physical", "Emotional", "Mental", "Spiritual"],
-          datasets: [{
-            label: 'Engagement Levels (%)',
-            data: [75, 85, 90, 60],
-            backgroundColor: ['#e94560', '#16213e', '#0f3460', '#1a1a2e']
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
+    /* Initialize Charts */
+    window.onload = function() {
+      const ctx1 = document.getElementById('realTimeChart').getContext('2d');
+      new Chart(ctx1, { type: 'line', data: engagementData });
 
-    function downloadResults() {
-      alert("Downloading results...");
-    }
+      const ctx2 = document.getElementById('resultsChart').getContext('2d');
+      new Chart(ctx2, { type: 'bar', data: engagementData });
 
-    function resetFlow() {
-      location.reload();
+      const ctx3 = document.getElementById('detailedResultsChart').getContext('2d');
+      new Chart(ctx3, { type: 'radar', data: engagementData });
+    };
+
+    /* PDF Export */
+    function generatePDF() {
+      const doc = new jsPDF();
+      doc.text('Engagement Results', 10, 10);
+      doc.save('results.pdf');
     }
   </script>
 </body>
