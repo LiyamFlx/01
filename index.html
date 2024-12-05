@@ -3,49 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EngageSense - Live Analysis v2</title>
+  <title>EngageSense - Audio Engagement Analysis</title>
   <style>
-    /* General Styling */
+    /* General Styles */
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #1a1a2e;
-      color: #f5f5f5;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
+      background-color: #1a1a2e;
+      color: #f5f5f5;
     }
 
     header {
       background-color: #16213e;
-      text-align: center;
       padding: 20px;
+      text-align: center;
     }
 
     header h1 {
-      color: #e94560;
       margin: 0;
-      font-size: 2.5rem;
+      font-size: 2rem;
+      color: #e94560;
     }
 
-    .container {
-      max-width: 900px;
-      margin: 20px auto;
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    nav a {
+      color: #f5f5f5;
+      text-decoration: none;
+      padding: 10px 15px;
       background: #0f3460;
-      border-radius: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav a:hover {
+      background-color: #e94560;
+    }
+
+    main {
       padding: 20px;
+      text-align: center;
+    }
+
+    footer {
+      background-color: #0f3460;
+      padding: 10px;
+      text-align: center;
+      color: #fff;
+    }
+
+    section {
+      margin: 20px auto;
+      max-width: 900px;
+      background-color: #1a1a2e;
+      padding: 20px;
+      border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
 
     canvas {
-      display: block;
-      margin: 20px auto;
       border: 2px solid #e94560;
+      margin: 20px auto;
+      display: block;
     }
 
-    button {
+    .chart-container {
+      margin: 20px auto;
+    }
+
+    .btn {
       padding: 10px 20px;
       font-size: 1rem;
-      background-color: #16213e;
-      color: #f5f5f5;
+      background-color: #0f3460;
+      color: #fff;
       border: none;
       border-radius: 5px;
       cursor: pointer;
@@ -53,158 +89,162 @@
       transition: background-color 0.3s;
     }
 
-    button:hover {
+    .btn:hover {
       background-color: #e94560;
     }
 
-    .metrics, .visualizations {
-      margin: 20px 0;
-    }
-
-    .metrics p {
-      font-size: 1.2rem;
-    }
-
-    .visualizations {
+    .dashboard-stats {
       display: flex;
       justify-content: space-around;
       flex-wrap: wrap;
+      gap: 15px;
     }
 
-    .chart-container {
-      width: 45%;
-      margin: 10px;
-      background: #1a1a2e;
-      padding: 10px;
+    .dashboard-card {
+      background-color: #16213e;
+      color: #f5f5f5;
+      padding: 15px;
       border-radius: 5px;
+      width: 45%;
+      text-align: center;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 600px) {
+      .dashboard-card {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header>
-    <h1>EngageSense - Live Analysis v2</h1>
-    <p>Real-time engagement metrics and sentiment detection</p>
+    <h1>EngageSense</h1>
+    <p>Real-Time Audio Engagement Analysis</p>
   </header>
 
-  <div class="container">
-    <h2>Live Audio Analysis</h2>
-    <canvas id="waveform" width="800" height="400"></canvas>
+  <!-- Navigation -->
+  <nav>
+    <a href="#welcome">Welcome</a>
+    <a href="#upload-record">Upload/Record</a>
+    <a href="#results">Results</a>
+    <a href="#dashboard">Dashboard</a>
+  </nav>
+
+  <!-- Welcome Section -->
+  <section id="welcome">
+    <h2>Welcome to EngageSense</h2>
+    <p>Personalized audio engagement insights at your fingertips.</p>
+    <button class="btn" onclick="startAnalysisFlow()">Get Started</button>
+  </section>
+
+  <!-- Upload/Record Section -->
+  <section id="upload-record">
+    <h2>Upload or Record Audio</h2>
     <div>
-      <button id="start-analysis">Start Analysis</button>
-      <button id="stop-analysis" disabled>Stop Analysis</button>
+      <h3>Upload Audio File</h3>
+      <input type="file" id="audio-upload" accept=".mp3,.wav" class="btn">
+      <button class="btn" onclick="handleUpload()">Analyze Upload</button>
     </div>
-
-    <div class="metrics">
-      <p id="volume">Volume: Measuring...</p>
-      <p id="pitch">Pitch: Detecting...</p>
-      <p id="tempo">Tempo: Calculating...</p>
-      <p id="sentiment">Sentiment: Analyzing...</p>
-    </div>
-
-    <div class="visualizations">
-      <div class="chart-container">
-        <canvas id="bar-chart"></canvas>
-      </div>
-      <div class="chart-container">
-        <canvas id="radial-chart"></canvas>
-      </div>
-    </div>
-
     <div>
-      <button id="save-results">Download Results</button>
+      <h3>Record Live Audio</h3>
+      <button class="btn" onclick="startRecording()">Start Recording</button>
+      <button class="btn" onclick="stopRecording()">Stop Recording</button>
     </div>
-  </div>
+  </section>
 
-  <!-- Load Libraries -->
+  <!-- Results Section -->
+  <section id="results">
+    <h2>Analysis Results</h2>
+    <div class="chart-container">
+      <canvas id="engagement-chart"></canvas>
+    </div>
+    <div>
+      <button class="btn" onclick="downloadResults()">Download Results</button>
+      <button class="btn" onclick="resetFlow()">Start Over</button>
+    </div>
+  </section>
+
+  <!-- Dashboard Section -->
+  <section id="dashboard">
+    <h2>Dashboard</h2>
+    <div class="dashboard-stats">
+      <div class="dashboard-card">
+        <h3>Total Analyses</h3>
+        <p id="total-analyses">0</p>
+      </div>
+      <div class="dashboard-card">
+        <h3>Most Recent Engagement</h3>
+        <p id="recent-engagement">N/A</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 EngageSense. All Rights Reserved.</p>
+  </footer>
+
+  <!-- JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tonejs/pitch@1.0.0/dist/Pitch.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/meyda/dist/web/meyda.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-
   <script>
-    const audioContext = new AudioContext();
-    const analyserNode = audioContext.createAnalyser();
-    const scriptProcessorNode = audioContext.createScriptProcessor(2048, 1, 1);
-    let stream, source;
+    let totalAnalyses = 0;
 
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
-      stream = s;
-      source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyserNode);
-      analyserNode.connect(scriptProcessorNode);
-      scriptProcessorNode.connect(audioContext.destination);
-    });
+    function startAnalysisFlow() {
+      alert("Starting analysis flow...");
+    }
 
-    const canvas = document.getElementById("waveform");
-    const ctx = canvas.getContext("2d");
-
-    function drawWaveform() {
-      const bufferLength = analyserNode.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      analyserNode.getByteTimeDomainData(dataArray);
-
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "#e94560";
-      ctx.beginPath();
-
-      const sliceWidth = canvas.width / bufferLength;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        const y = (dataArray[i] / 256.0) * canvas.height;
-        ctx.lineTo(x, y);
-        x += sliceWidth;
+    function handleUpload() {
+      const uploadInput = document.getElementById('audio-upload');
+      if (!uploadInput.files.length) {
+        alert("No file selected.");
+        return;
       }
-      ctx.stroke();
+      alert("Audio uploaded successfully! Analysis starting...");
+      updateResults();
     }
 
-    function startAnalysis() {
-      scriptProcessorNode.onaudioprocess = () => {
-        drawWaveform();
-        updateMetrics();
-      };
-      document.getElementById("start-analysis").disabled = true;
-      document.getElementById("stop-analysis").disabled = false;
+    function startRecording() {
+      alert("Recording started...");
     }
 
-    function stopAnalysis() {
-      scriptProcessorNode.onaudioprocess = null;
-      document.getElementById("start-analysis").disabled = false;
-      document.getElementById("stop-analysis").disabled = true;
+    function stopRecording() {
+      alert("Recording stopped. Analysis starting...");
+      updateResults();
     }
 
-    function updateMetrics() {
-      const volume = calculateVolume();
-      const sentiment = detectSentiment();
-      const tempo = calculateTempo();
+    function updateResults() {
+      totalAnalyses++;
+      document.getElementById("total-analyses").innerText = totalAnalyses;
 
-      document.getElementById("volume").innerText = `Volume: ${volume}`;
-      document.getElementById("pitch").innerText = `Pitch: ${Math.random() * 400 + 50} Hz`; // Placeholder
-      document.getElementById("tempo").innerText = `Tempo: ${tempo} BPM`;
-      document.getElementById("sentiment").innerText = `Sentiment: ${sentiment}`;
+      const ctx = document.getElementById("engagement-chart").getContext("2d");
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ["Physical", "Emotional", "Mental", "Spiritual"],
+          datasets: [{
+            label: 'Engagement Levels (%)',
+            data: [75, 85, 90, 60],
+            backgroundColor: ['#e94560', '#16213e', '#0f3460', '#1a1a2e']
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
     }
 
-    function calculateVolume() {
-      const buffer = new Uint8Array(analyserNode.fftSize);
-      analyserNode.getByteTimeDomainData(buffer);
-      const rms = Math.sqrt(buffer.reduce((sum, val) => sum + val ** 2, 0) / buffer.length);
-      return Math.round(rms * 100);
+    function downloadResults() {
+      alert("Downloading results...");
     }
 
-    function detectSentiment() {
-      const moods = ["Happy", "Neutral", "Sad"];
-      return moods[Math.floor(Math.random() * moods.length)];
+    function resetFlow() {
+      location.reload();
     }
-
-    function calculateTempo() {
-      return Math.round(Math.random() * 180 + 60); // Simulated Tempo
-    }
-
-    document.getElementById("start-analysis").addEventListener("click", startAnalysis);
-    document.getElementById("stop-analysis").addEventListener("click", stopAnalysis);
   </script>
 </body>
 </html>
