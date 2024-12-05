@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EngageSense - Live Analysis v2</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #1a1a2e;
+      color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #16213e;
+      text-align: center;
+      padding: 20px;
+    }
+
+    header h1 {
+      color: #e94560;
+      margin: 0;
+      font-size: 2.5rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background: #0f3460;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #e94560;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #16213e;
+      color: #f5f5f5;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #e94560;
+    }
+
+    .metrics, .visualizations {
+      margin: 20px 0;
+    }
+
+    .metrics p {
+      font-size: 1.2rem;
+    }
+
+    .visualizations {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+
+    .chart-container {
+      width: 45%;
+      margin: 10px;
+      background: #1a1a2e;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>EngageSense - Live Analysis v2</h1>
+    <p>Real-time engagement metrics and sentiment detection</p>
+  </header>
+
+  <div class="container">
+    <h2>Live Audio Analysis</h2>
+    <canvas id="waveform" width="800" height="400"></canvas>
+    <div>
+      <button id="start-analysis">Start Analysis</button>
+      <button id="stop-analysis" disabled>Stop Analysis</button>
+    </div>
+
+    <div class="metrics">
+      <p id="volume">Volume: Measuring...</p>
+      <p id="pitch">Pitch: Detecting...</p>
+      <p id="tempo">Tempo: Calculating...</p>
+      <p id="sentiment">Sentiment: Analyzing...</p>
+    </div>
+
+    <div class="visualizations">
+      <div class="chart-container">
+        <canvas id="bar-chart"></canvas>
+      </div>
+      <div class="chart-container">
+        <canvas id="radial-chart"></canvas>
+      </div>
+    </div>
+
+    <div>
+      <button id="save-results">Download Results</button>
+    </div>
+  </div>
+
+  <!-- Load Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tonejs/pitch@1.0.0/dist/Pitch.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/meyda/dist/web/meyda.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+  <script>
+    const audioContext = new AudioContext();
+    const analyserNode = audioContext.createAnalyser();
+    const scriptProcessorNode = audioContext.createScriptProcessor(2048, 1, 1);
+    let stream, source;
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
+      stream = s;
+      source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyserNode);
+      analyserNode.connect(scriptProcessorNode);
+      scriptProcessorNode.connect(audioContext.destination);
+    });
+
+    const canvas = document.getElementById("waveform");
+    const ctx = canvas.getContext("2d");
+
+    function drawWaveform() {
+      const bufferLength = analyserNode.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      analyserNode.getByteTimeDomainData(dataArray);
+
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#e94560";
+      ctx.beginPath();
+
+      const sliceWidth = canvas.width / bufferLength;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const y = (dataArray[i] / 256.0) * canvas.height;
+        ctx.lineTo(x, y);
+        x += sliceWidth;
+      }
+      ctx.stroke();
+    }
+
+    function startAnalysis() {
+      scriptProcessorNode.onaudioprocess = () => {
+        drawWaveform();
+        updateMetrics();
+      };
+      document.getElementById("start-analysis").disabled = true;
+      document.getElementById("stop-analysis").disabled = false;
+    }
+
+    function stopAnalysis() {
+      scriptProcessorNode.onaudioprocess = null;
+      document.getElementById("start-analysis").disabled = false;
+      document.getElementById("stop-analysis").disabled = true;
+    }
+
+    function updateMetrics() {
+      const volume = calculateVolume();
+      const sentiment = detectSentiment();
+      const tempo = calculateTempo();
+
+      document.getElementById("volume").innerText = `Volume: ${volume}`;
+      document.getElementById("pitch").innerText = `Pitch: ${Math.random() * 400 + 50} Hz`; // Placeholder
+      document.getElementById("tempo").innerText = `Tempo: ${tempo} BPM`;
+      document.getElementById("sentiment").innerText = `Sentiment: ${sentiment}`;
+    }
+
+    function calculateVolume() {
+      const buffer = new Uint8Array(analyserNode.fftSize);
+      analyserNode.getByteTimeDomainData(buffer);
+      const rms = Math.sqrt(buffer.reduce((sum, val) => sum + val ** 2, 0) / buffer.length);
+      return Math.round(rms * 100);
+    }
+
+    function detectSentiment() {
+      const moods = ["Happy", "Neutral", "Sad"];
+      return moods[Math.floor(Math.random() * moods.length)];
+    }
+
+    function calculateTempo() {
+      return Math.round(Math.random() * 180 + 60); // Simulated Tempo
+    }
+
+    document.getElementById("start-analysis").addEventListener("click", startAnalysis);
+    document.getElementById("stop-analysis").addEventListener("click", stopAnalysis);
+  </script>
+</body>
+</html>
